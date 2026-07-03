@@ -1,11 +1,15 @@
+import dotenv from "dotenv";
+dotenv.config();
 import OpenAI from "openai";
 import readlineSync from "readline-sync";
-const OPENAI_API_KEY = process.env.openai_api_key;
 import axios from "axios";
 import { exec } from "child_process";
+import { type } from "os";
 
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+console.log(process.env.OPENAI_API_KEY);
 const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+     apiKey: OPENAI_API_KEY
 })
 
 // create tool which access real time wheather data (Tools)
@@ -83,65 +87,86 @@ const SYSTEM_PROMPT = `
 `;
 
 
-const messages = [
-  {
-    role: "system",
-    content: SYSTEM_PROMPT,
-  },
-  {
-    role: "user",
-    content: "In the current directory, read the changes via git and push the changes to github with a good commit message",
-  },
-];
+const messages = [{ role: "system", content: SYSTEM_PROMPT,}];
   
 while (true) {
-  const response = await client.chat.completions.create({
-    model: "gpt-4o",
-    messages: messages,
-  });
 
-  const rawContent = response.choices[0].message.content;
-  const parsedContent = JSON.parse(rawContent);
-  console.log(parsedContent);
+    const query = readlineSync.question(">> ");
 
-  messages.push({
-    role: "assistant",
-    content: JSON.stringify(parsedContent),
-  });
-
-  if (parsedContent.step === "START") {
-    console.log(`🔥`, parsedContent.content);
-    continue;
-  }
-
-  if (parsedContent.step === "THINK") {
-    console.log(`🧠`, parsedContent.content);
-    continue;
-  }
-
-  if (parsedContent.step === "TOOL") {
-    const toolToCall = parsedContent.tool_name;
-
-    if (!TOOL_MAP[toolToCall]) {
-      messages.push({
-        role: "developer",
-        content: `There is no such tool as ${toolToCall}`,
-      });
-      continue;
+    if (query === "exit") {
+        console.log("Bye!");
+        break;
     }
 
-    const responseFromTool = await TOOL_MAP[toolToCall](parsedContent.input);
-    console.log(`🛠️: ${toolToCall}(${parsedContent.input}) = `, responseFromTool);
-
     messages.push({
-      role: "developer",
-      content: JSON.stringify({ step: "OBSERVE", content: responseFromTool }),
+        role: "user",
+        content: JSON.stringify({
+            type: "user",
+            user: query
+        })
     });
-    continue;
-  }
 
-  if (parsedContent.step === "OUTPUT") {
-    console.log(`🤖`, parsedContent.content);
-    break;
-  }
+    while (true) {
+
+        const response = await client.chat.completions.create({
+            model: "gpt-4o",
+            messages
+        });
+
+        const parsedContent = JSON.parse(
+            response.choices[0].message.content
+        );
+
+        messages.push({
+            role: "assistant",
+            content: JSON.stringify(parsedContent)
+        });
+
+        switch (parsedContent.step) {
+
+            case "START":
+                console.log("🔥", parsedContent.content);
+                continue;
+
+            case "THINK":
+                console.log("🧠", parsedContent.content);
+                continue;
+
+            case "TOOL":
+
+                const tool = TOOL_MAP[parsedContent.tool_name];
+
+                if (!tool) {
+                    messages.push({
+                        role: "developer",
+                        content: `Tool ${parsedContent.tool_name} not found`
+                    });
+                    continue;
+                }
+
+                const observation = await tool(parsedContent.input);
+
+                console.log("🛠", observation);
+
+                messages.push({
+                    role: "developer",
+                    content: JSON.stringify({
+                        step: "OBSERVE",
+                        content: observation
+                    })
+                });
+
+                continue;
+
+            case "OUTPUT":
+                console.log("🤖", parsedContent.content);
+                break;
+
+            default:
+                console.log("Unknown step");
+                break;
+        }
+
+        break; // exits the inner loop after OUTPUT
+    }
 }
