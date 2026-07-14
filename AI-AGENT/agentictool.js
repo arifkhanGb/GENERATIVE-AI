@@ -167,6 +167,6 @@ while (true) {
                 break;
         }
 
-        break; // exits the inner loop after OUTPUT
+        break;
     }
 }

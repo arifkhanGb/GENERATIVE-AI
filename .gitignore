@@ -1,2 +1,12 @@
+# Environment files and secrets
 .env
+.env.*
+!.env.example
+
+# Dependency directories
 node_modules/
+
+# Generated logs and local editor files
+*.log
+.DS_Store
+.vscode/
