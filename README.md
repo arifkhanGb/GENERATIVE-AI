@@ -1,136 +1,104 @@
-# Generative AI Projects
+# Generative AI Learning Repository
 
-A Node.js learning repository containing two practical Generative AI projects:
+This repository is a hands-on space for learning how modern Generative AI applications are designed, built, and improved. It focuses on practical experimentation with large language models, prompting, embeddings, retrieval, tool use, and AI application workflows.
 
-- **AI-AGENT** — a command-line AI agent that demonstrates a plan → action → observation → output loop and tool calling.
-- **RAG** — a Retrieval-Augmented Generation (RAG) application that indexes a PDF in Qdrant and answers questions from retrieved context.
+## Purpose
 
-## Repository layout
+Generative AI is more than sending a prompt to a model. Useful applications need clear instructions, reliable data, well-defined tools, careful evaluation, and responsible handling of credentials and user input.
+
+This repository supports learning those ideas through small, practical implementations and experiments.
+
+## Topics covered
+
+- Large Language Models (LLMs) and chat completions
+- Prompt engineering and structured outputs
+- Tool calling and agent-style workflows
+- Embeddings and semantic search
+- Retrieval-Augmented Generation (RAG)
+- Vector databases and document indexing
+- Context-aware responses
+- API integration with OpenAI
+- Docker-based local development
+- Secure environment-variable management
+
+## Learning approach
+
+The best way to understand Generative AI is to build, observe, and iterate:
 
 ```text
-GENERATIVE-AI/
-├── AI-AGENT/                 # Tool-calling AI agent
-│   ├── index.js              # Basic agent workflow
-│   ├── agentictool.js        # Extended agent workflow
-│   └── package.json
-├── RAG/                      # PDF question-answering RAG pipeline
-│   ├── indexing.js           # PDF ingestion and vector indexing
-│   ├── chat.js               # Retrieval and answer generation
-│   ├── docker-compose.yml    # Local Qdrant service
-│   └── package.json
-└── README.md
+Learn a concept → build a small experiment → test the output → evaluate limitations → improve the design
 ```
+
+Each implementation is intended to make the underlying AI workflow visible rather than treating it as a black box.
 
 ## Prerequisites
 
 - Node.js 18 or later
 - An OpenAI API key
-- Docker Desktop (required for the RAG project's local Qdrant database)
+- Docker Desktop for services that run locally in containers
+- Basic familiarity with JavaScript and the command line
 
-## Clone the repository
+## Setup
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/arifkhanGb/GENERATIVE-AI.git
 cd GENERATIVE-AI
 ```
 
-## Environment variables
+Install dependencies in the learning module you want to run:
 
-Create a separate `.env` file in **each** project folder that needs the OpenAI API.
+```bash
+npm install
+```
+
+Create a local `.env` file where required:
 
 ```env
 OPENAI_API_KEY=your_openai_api_key
 ```
 
-Never commit `.env` files or API keys. They are excluded by the repository's `.gitignore` files.
+Never commit API keys or `.env` files. Keep secrets local and rotate a key immediately if it is exposed.
 
-## AI Agent
+## Core Generative AI concepts
 
-The basic agent accepts terminal input, asks the model to return structured JSON, and executes its available weather tool when requested.
+### Prompting
 
-```bash
-cd AI-AGENT
-npm install
-node index.js
-```
+A prompt defines the task, constraints, expected output, and available context. Clear prompts lead to more useful and predictable model responses.
 
-Type a question at the `>>` prompt. Stop the process with `Ctrl+C`.
+### Embeddings
 
-`agentictool.js` is an extended experimental version that also includes weather lookup and GitHub-profile tools:
+Embeddings convert text into vectors that capture semantic meaning. They make it possible to find content that is similar in meaning, not just exact wording.
 
-```bash
-node agentictool.js
-```
+### Retrieval-Augmented Generation
 
-> **Security note:** `agentictool.js` contains an `executeCommand` tool that can run commands on your computer. Treat it as a local experiment only; do not expose it to untrusted users or deploy it without a strict command allowlist and isolation. Also remove any API-key logging before use.
+RAG retrieves relevant information from a knowledge source before asking an LLM to answer. This helps ground responses in provided documents and reduces reliance on model memory alone.
 
-## RAG PDF Question Answering
+### Agents and tools
 
-The RAG project performs the following workflow:
+An agent-style workflow lets a model choose from defined tools, observe the result, and use that result to produce an answer. Tools should be narrowly scoped, validated, and protected from untrusted input.
 
-```text
-PDF → text chunks → OpenAI embeddings → Qdrant → semantic retrieval → OpenAI answer
-```
+## Responsible development
 
-### 1. Install dependencies and configure the API key
+- Do not expose API keys in source code, commits, screenshots, or logs.
+- Validate user input before sending it to tools or external services.
+- Use allowlists and sandboxing for any command-execution capability.
+- Treat model outputs as untrusted until they are validated for the intended use.
+- Be mindful of OpenAI API usage and associated costs.
+- Test with representative inputs and review incorrect or unsupported answers.
 
-```bash
-cd RAG
-npm install
-```
+## Contributing
 
-Create `RAG/.env` using the environment-variable example above.
-
-### 2. Start Qdrant
+Keep changes focused and easy to review. Before pushing:
 
 ```bash
-docker compose up -d
-```
-
-Qdrant will be available at `http://localhost:6333/dashboard`.
-
-### 3. Index the sample PDF
-
-```bash
-npm run index
-```
-
-This reads `nodejs_dummy_rag.pdf`, splits it into chunks, creates embeddings with `text-embedding-3-large`, and stores them in the `notebookllm` Qdrant collection.
-
-### 4. Ask a question
-
-```bash
-npm run chat
-```
-
-The question is currently defined in `RAG/chat.js`. Edit the `userQuery` value, then run the command again to try another question.
-
-### Stop the database
-
-```bash
-docker compose down
-```
-
-## Technology
-
-| Area | Tools |
-| --- | --- |
-| Runtime | Node.js, JavaScript (ES modules) |
-| AI models | OpenAI chat completions and embeddings |
-| Agent tools | `readline-sync`, Axios |
-| RAG orchestration | LangChain |
-| Vector database | Qdrant via Docker |
-
-## Development workflow
-
-From the repository root, stage, commit, and push your changes:
-
-```bash
+git status
 git add .
 git commit -m "Describe your change"
 git push origin main
 ```
 
-## Notes
+## License
 
-This repository is intended for learning and experimentation. Running the projects makes calls to OpenAI and may incur charges on the associated API account.
+This repository is intended for educational and experimental use.
