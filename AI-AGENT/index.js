@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import readlineSync from "readline-sync";
+  import readlineSync from "readline-sync";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 //create a client for the OpenAI API (will interact with OpenAI models)

@@ -2,6 +2,7 @@ import "dotenv/config";
 import { OpenAI } from "openai";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { QdrantVectorStore } from "@langchain/qdrant";
+import readlineSync from "readline-sync";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -10,8 +11,16 @@ const openai = new OpenAI({
 const main = async () => {
   try {
     // Step 6: user input query
-    const userQuery =
-      "please, can you tell me about the MongoDB hosting is what and why use?";
+    // const userQuery =
+    //   "please, can you tell me about the MongoDB hosting is what and why use?";
+    const messages = [{ role: "system", content: systemPrompt }];
+    const userQuery = readlineSync.question(">>  ");
+    const q = {
+      type: "user",
+      user: query,
+    };
+
+    messages.push({ role: "user", content: JSON.stringify(q) });
 
     // Step 7: create vector embedding for for user query
     const embedding = new OpenAIEmbeddings({
